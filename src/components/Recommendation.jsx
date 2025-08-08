@@ -4,12 +4,14 @@ import { movieService } from '../services/movieService';
 import { tmdbApi } from '../lib/tmdb';
 import { ArrowLeft, Star, Calendar, Clock, Play, RotateCw, XCircle } from 'lucide-react';
 
-const Recommendation = ({ recommendation, onAccept, onGetAnother, onBack, onStartOver }) => {
+const Recommendation = ({ onBack, onStartOver }) => {
   const { user } = useAuth();
+  const [recommendation, setRecommendation] = useState(null);
   const [movieDetails, setMovieDetails] = useState(null);
   const [gettingNew, setGettingNew] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Handle window resize for responsive behavior
   useEffect(() => {
@@ -21,11 +23,23 @@ const Recommendation = ({ recommendation, onAccept, onGetAnother, onBack, onStar
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const fetchMovieDetails = async () => {
+    if (!recommendation?.movie?.id) return;
+    
+    try {
+      const details = await tmdbApi.getMovieDetails(recommendation.movie.id);
+      setMovieDetails(details);
+    } catch (err) {
+      console.error('Error fetching movie details:', err);
+      // Continue without movie details if there's an error
+    }
+  };
+
   useEffect(() => {
-    if (recommendation) {
+    if (recommendation?.movie?.id) {
       fetchMovieDetails();
     }
-  }, [recommendation]);
+  }, [recommendation?.movie?.id]);
 
   useEffect(() => {
     if (user?.id) {
@@ -65,6 +79,12 @@ const Recommendation = ({ recommendation, onAccept, onGetAnother, onBack, onStar
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAccept = () => {
+    // Show success message and go back to home
+    alert('Great choice! Enjoy your movie! 🎬');
+    if (onStartOver) onStartOver();
   };
 
   const handleGetAnother = async () => {
@@ -110,11 +130,7 @@ const Recommendation = ({ recommendation, onAccept, onGetAnother, onBack, onStar
     }
   };
 
-  const handleAccept = () => {
-    // Show success message and go back to home
-    alert('Great choice! Enjoy your movie! 🎬');
-    onBack();
-  };
+
 
   const getTrailerUrl = () => {
     if (!movieDetails?.videos?.results) return null;
@@ -314,50 +330,58 @@ const Recommendation = ({ recommendation, onAccept, onGetAnother, onBack, onStar
                   </div>
                 )}
 
-                {/* Desktop Action Buttons - Simple mobile-style design */}
-                {isDesktop && (
-                  <div className="mt-6 space-y-3">
-                    <button
-                      onClick={handleAccept}
-                      className="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
-                    >
-                      Perfect! I'll Watch This
-                    </button>
-                    
+                {/* Action Buttons - Responsive Design */}
+                <div className="mt-6 space-y-3">
+                  {/* Main Action - Watch This */}
+                  <button
+                    onClick={handleAccept}
+                    className="w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 font-semibold flex items-center justify-center space-x-2"
+                  >
+                    <Play className="h-5 w-5" />
+                    <span>Watch This Movie</span>
+                  </button>
+                  
+                  {/* Secondary Actions */}
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={handleGetAnother}
                       disabled={gettingNew}
-                      className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
+                      className="px-4 py-2.5 bg-white border-2 border-gray-200 hover:border-indigo-300 text-gray-700 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-2"
                     >
                       {gettingNew ? (
-                        <span className="flex items-center justify-center">
-                          <RotateCw className="h-4 w-4 mr-2 animate-spin" />
-                          Finding Another...
-                        </span>
+                        <>
+                          <RotateCw className="h-4 w-4 animate-spin" />
+                          <span className="text-sm">Finding...</span>
+                        </>
                       ) : (
-                        'Find Another One'
+                        <>
+                          <RotateCw className="h-4 w-4" />
+                          <span className="text-sm">Find Another</span>
+                        </>
                       )}
                     </button>
                     
                     <button
                       onClick={onStartOver}
-                      className="w-full px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                      className="px-4 py-2.5 bg-white border-2 border-gray-200 hover:border-indigo-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all flex items-center justify-center space-x-2"
                     >
-                      Swipe More Movies First
+                      <ArrowLeft className="h-4 w-4" />
+                      <span className="text-sm">More Movies</span>
                     </button>
                   </div>
-                )}
-
-                {/* Mobile - No action buttons, just swipe instructions */}
-                {!isDesktop && (
-                  <div className="mt-6 text-center">
-                    <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-                      <p className="text-indigo-800 font-medium text-sm">
-                        👆 Swipe up to see more details or use the back button to continue swiping
-                      </p>
-                    </div>
-                  </div>
-                )}
+                  
+                  {/* Trailer Button - Show only if trailer exists */}
+                  {trailerUrl && (
+                    <a
+                      href={trailerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full block px-6 py-2.5 bg-white border-2 border-gray-200 hover:border-red-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all text-center"
+                    >
+                      <span className="text-sm font-medium">Watch Trailer</span>
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -378,30 +402,50 @@ const Recommendation = ({ recommendation, onAccept, onGetAnother, onBack, onStar
         )}
       </div>
 
-      {/* Mobile Sticky Bottom Actions */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-bottom z-50">
+      {/* Mobile Sticky Bottom Action - Watch Now */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-r from-indigo-600 to-blue-600 safe-area-bottom z-50 shadow-lg">
         <div className="max-w-md mx-auto px-4 py-3">
-          <div className="flex gap-2">
+          <button
+            onClick={handleAccept}
+            className="w-full px-6 py-4 bg-white text-indigo-700 rounded-xl shadow-lg font-bold text-lg flex items-center justify-center space-x-3 transform active:scale-95 transition-transform"
+          >
+            <Play className="h-6 w-6" />
+            <span>Watch Now</span>
+          </button>
+          
+          {/* Quick Actions */}
+          <div className="flex justify-center mt-2 space-x-4">
             <button
               onClick={handleGetAnother}
               disabled={gettingNew}
-              className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 text-white opacity-80 hover:opacity-100 transition-opacity"
+              title="Find another movie"
             >
               {gettingNew ? (
-                <span className="flex items-center justify-center">
-                  <RotateCw className="h-4 w-4 mr-2 animate-spin" />
-                  Finding...
-                </span>
+                <RotateCw className="h-5 w-5 animate-spin" />
               ) : (
-                'Find Another'
+                <RotateCw className="h-5 w-5" />
               )}
             </button>
             
+            {trailerUrl && (
+              <a
+                href={trailerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-white opacity-80 hover:opacity-100 transition-opacity"
+                title="Watch trailer"
+              >
+                <Play className="h-5 w-5" />
+              </a>
+            )}
+            
             <button
               onClick={onStartOver}
-              className="px-4 py-3 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="p-2 text-white opacity-80 hover:opacity-100 transition-opacity"
+              title="Find more movies"
             >
-              More Movies
+              <ArrowLeft className="h-5 w-5" />
             </button>
           </div>
         </div>

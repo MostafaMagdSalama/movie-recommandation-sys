@@ -273,19 +273,23 @@ const SwipeView = ({ onSwipeComplete, onBack }) => {
               <button
                 onClick={() => swipeManually('left')}
                 disabled={currentIndex >= movies.length || movies.length === 0}
-                className="group flex items-center px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl shadow-lg hover:shadow-xl disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 font-semibold text-lg"
+                className="group flex flex-col items-center justify-center px-6 py-3 bg-white border-2 border-red-200 hover:border-red-300 rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95"
               >
-                <ThumbsDown className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform" />
-                Dislike
+                <div className="p-3 bg-red-50 rounded-full mb-2 group-hover:bg-red-100 transition-colors">
+                  <ThumbsDown className="h-6 w-6 text-red-500 group-hover:scale-110 transition-transform" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Dislike</span>
               </button>
               
               <button
                 onClick={() => swipeManually('right')}
                 disabled={currentIndex >= movies.length || movies.length === 0}
-                className="group flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl shadow-lg hover:shadow-xl disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 font-semibold text-lg"
+                className="group flex flex-col items-center justify-center px-6 py-3 bg-white border-2 border-green-200 hover:border-green-300 rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95"
               >
-                <ThumbsUp className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform" />
-                Like
+                <div className="p-3 bg-green-50 rounded-full mb-2 group-hover:bg-green-100 transition-colors">
+                  <ThumbsUp className="h-6 w-6 text-green-500 group-hover:scale-110 transition-transform" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Like</span>
               </button>
             </div>
             
@@ -298,13 +302,30 @@ const SwipeView = ({ onSwipeComplete, onBack }) => {
         </div>
       )}
 
-      {/* Mobile swipe instruction - minimal */}
-      <div className="bg-indigo-50 border-t border-indigo-200 safe-area-bottom sm:hidden">
+      {/* Mobile swipe instruction - enhanced */}
+      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border-t-2 border-indigo-200 safe-area-bottom sm:hidden">
         <div className="max-w-md mx-auto px-4 py-3">
-          <div className="text-center">
-            <p className="text-xs text-indigo-700 font-medium">
-              👈 Swipe or tap buttons to rate • Swipe right to like 👉
-            </p>
+          <div className="flex items-center justify-center space-x-4">
+            <div className="flex flex-col items-center">
+              <div className="bg-red-100 p-2 rounded-full mb-1">
+                <ThumbsDown className="h-5 w-5 text-red-500" />
+              </div>
+              <span className="text-xs font-medium text-gray-600">Dislike</span>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-indigo-800">
+                Swipe or tap to rate
+              </p>
+              <p className="text-xs text-indigo-600">
+                {10 - swipeCount} more to get recommendations
+              </p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="bg-green-100 p-2 rounded-full mb-1">
+                <ThumbsUp className="h-5 w-5 text-green-500" />
+              </div>
+              <span className="text-xs font-medium text-gray-600">Like</span>
+            </div>
           </div>
         </div>
       </div>
