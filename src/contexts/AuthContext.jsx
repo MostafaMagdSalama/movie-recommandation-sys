@@ -33,10 +33,16 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe()
   }, [])
 
+  const redirectUrl = `${window.location.origin}/`
+
   const signUp = async (email, password) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: redirectUrl,
+
+      }
     })
     return { data, error }
   }
