@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ThumbsUp, ThumbsDown, RotateCw, XCircle } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 import { movieService } from '../services/movieService';
 import MovieCard from './MovieCard';
 import SwipeCard from './SwipeCard';
 
-const SwipeView = ({ onSwipeComplete, onBack }) => {
-  const { user } = useAuth();
+const SwipeView = ({ userId, onSwipeComplete, onBack }) => {
   const [movies, setMovies] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -26,17 +24,17 @@ const SwipeView = ({ onSwipeComplete, onBack }) => {
 
   // Load movies when component mounts
   useEffect(() => {
-    if (user?.id) {
+    if (userId) {
       loadMovies();
     }
-  }, [user]);
+  }, [userId]);
 
   const loadMovies = async () => {
     try {
       setLoading(true);
       setError('');
       
-      const result = await movieService.getMoviesForSwiping(user.id);
+      const result = await movieService.getMoviesForSwiping(userId);
       
       if (result.error) {
         setError(result.error);
@@ -75,7 +73,7 @@ const SwipeView = ({ onSwipeComplete, onBack }) => {
 
     try {
       // Save the swipe to database
-      const result = await movieService.saveSwipe(user.id, movie.id, voteType, movie);
+      const result = await movieService.saveSwipe(userId, movie.id, voteType, movie);
       
       if (result.error) {
         console.error('Error saving swipe:', result.error);

@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { movieService } from '../services/movieService';
 import { tmdbApi } from '../lib/tmdb';
 import { ArrowLeft, Star, Calendar, Clock, Play, RotateCw, XCircle } from 'lucide-react';
 
-const Recommendation = ({ onBack, onStartOver }) => {
-  const { user } = useAuth();
+const Recommendation = ({ userId, onBack, onStartOver }) => {
   const [recommendation, setRecommendation] = useState(null);
   const [movieDetails, setMovieDetails] = useState(null);
   const [gettingNew, setGettingNew] = useState(false);
@@ -42,17 +40,17 @@ const Recommendation = ({ onBack, onStartOver }) => {
   }, [recommendation?.movie?.id]);
 
   useEffect(() => {
-    if (user?.id) {
+    if (userId) {
       getInitialRecommendation();
     }
-  }, [user]);
+  }, [userId]);
 
   const getInitialRecommendation = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const result = await movieService.getRecommendation(user.id);
+      const result = await movieService.getRecommendation(userId);
       
       if (result.error) {
         setError(result.error);
@@ -96,7 +94,7 @@ const Recommendation = ({ onBack, onStartOver }) => {
       const currentMovieId = recommendation?.movie?.id;
       
       // Get new recommendation, excluding the current movie
-      const result = await movieService.getRecommendation(user.id, currentMovieId);
+      const result = await movieService.getRecommendation(userId, currentMovieId);
       
       if (result.error) {
         if (result.error.includes('no more movies')) {

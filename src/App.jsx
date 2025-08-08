@@ -1,29 +1,21 @@
 import React, { useState } from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
-import Auth from './components/Auth'
 import Home from './components/Home'
 import SwipeView from './components/SwipeView'
 import Recommendation from './components/Recommendation'
 
 const AppContent = () => {
-  const { user, loading } = useAuth()
+  // Create a stable anonymous user id stored in localStorage
+  const [userId] = useState(() => {
+    const key = 'anon_user_id'
+    let id = localStorage.getItem(key)
+    if (!id) {
+      id = 'anon_' + Math.random().toString(36).slice(2) + Date.now().toString(36)
+      localStorage.setItem(key, id)
+    }
+    return id
+  })
   const [currentView, setCurrentView] = useState('home') // 'home', 'swipe', 'recommendation'
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return <Auth />
-  }
 
   const handleStartSwiping = () => {
     setCurrentView('swipe')
@@ -49,6 +41,7 @@ const AppContent = () => {
     case 'swipe':
       return (
         <SwipeView
+          userId={userId}
           onSwipeComplete={handleSwipeComplete}
           onBack={handleBackToHome}
         />
@@ -56,21 +49,20 @@ const AppContent = () => {
     case 'recommendation':
       return (
         <Recommendation
+          userId={userId}
           onBack={handleBackToSwipe}
           onStartOver={handleStartOver}
         />
       )
     default:
-      return <Home onStartSwiping={handleStartSwiping} />
+      return <Home userId={userId} onStartSwiping={handleStartSwiping} />
   }
 }
 
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <AppContent />
     </Router>
   )
 }

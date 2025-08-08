@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
 import { useLocation } from 'react-router-dom'
-import { Play, LogOut, Film, CheckCircle } from 'lucide-react'
+import { Play, Film, CheckCircle } from 'lucide-react'
 
-const Home = ({ onStartSwiping }) => {
-  const { user, signOut } = useAuth()
+const Home = ({ userId, onStartSwiping }) => {
   const location = useLocation()
   const [successMessage, setSuccessMessage] = useState('')
 
@@ -16,10 +14,6 @@ const Home = ({ onStartSwiping }) => {
     }
   }, [location.state])
 
-  const handleSignOut = async () => {
-    await signOut()
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
       <div className="container mx-auto px-4 py-8">
@@ -29,13 +23,6 @@ const Home = ({ onStartSwiping }) => {
             <Film className="h-8 w-8 text-primary-600" />
             <h1 className="text-2xl font-bold text-gray-900">MovieSwipe</h1>
           </div>
-          <button
-            onClick={handleSignOut}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            <LogOut className="h-5 w-5" />
-            <span>Sign out</span>
-          </button>
         </div>
 
         {/* Success Message */}
@@ -93,9 +80,9 @@ const Home = ({ onStartSwiping }) => {
             <span>Start Swiping</span>
           </button>
 
-          {/* User Info */}
-          <div className="mt-8 text-gray-500">
-            <p>Welcome, {user?.email}</p>
+          {/* Anonymous user notice (optional) */}
+          <div className="mt-8 text-gray-500 text-sm">
+            <p>Using guest session</p>
           </div>
         </div>
       </div>

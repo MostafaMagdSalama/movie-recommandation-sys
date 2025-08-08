@@ -1,4 +1,3 @@
-import { supabase } from '../lib/supabase'
 import { tmdbApi } from '../lib/tmdb'
 
 // Use real TMDB API for movies, but localStorage for user data (no Supabase)
